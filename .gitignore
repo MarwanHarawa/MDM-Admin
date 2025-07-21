@@ -35,7 +35,7 @@ migrate_working_dir/
 
 
 # استثناء مفتاح الخدمة من التتبع
-# lib/secrets/service_account.json
+ lib/notifications/notifications_helper.dart
 
 # Symbolication related
 app.*.symbols

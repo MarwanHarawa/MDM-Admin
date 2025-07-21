@@ -63,7 +63,7 @@ class _AppsManagementScreenState extends State<AppsManagementScreen>
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('devices')
-          .where('isOnline', isEqualTo: true)
+          // .where('isOnline', isEqualTo: true)
           .get();
 
       setState(() {

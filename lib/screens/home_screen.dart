@@ -8,6 +8,8 @@ import 'devices_management_screen.dart';
 import 'apps_management_screen.dart';
 import 'location_tracking_screen.dart';
 import 'commands_screen.dart';
+import 'settings_screen.dart';
+import '../animations/page_transitions.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -78,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen>
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('devices')
-          .orderBy('lastSeen', descending: true)
+          // .orderBy('lastSeen', descending: true)
           .get();
 
       final fetchedDevices = querySnapshot.docs
@@ -193,10 +195,11 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
+      drawer: _buildDrawer(),
       body: CustomScrollView(
         slivers: [
           _buildAppBar(),
-          _buildQuickStats(),
+          //_buildQuickStats(),
           _buildQuickActions(),
           _buildSearchBar(),
           _buildDevicesList(),
@@ -232,19 +235,25 @@ class _HomeScreenState extends State<HomeScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.end,
+
                     children: [
-                      Text(
-                        'إدارة الأجهزة',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: AppTheme.textOnPrimary,
-                          fontWeight: FontWeight.bold,
+                      Center(
+                        child: Text(
+                          'إدارة الأجهزة', 
+                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                            color: AppTheme.textOnPrimary,
+                            fontWeight: FontWeight.bold,
+                            
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        'تحكم في جميع أجهزتك من مكان واحد',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppTheme.textOnPrimary.withOpacity(0.9),
+                      Center(
+                        child: Text(
+                          'تحكم في جميع أجهزتك من مكان واحد',
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: AppTheme.textOnPrimary.withOpacity(0.9),
+                          ),
                         ),
                       ),
                     ],
@@ -255,20 +264,20 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.refresh, color: AppTheme.textOnPrimary),
-          onPressed: _fetchDevices,
-          tooltip: 'تحديث',
-        ),
-        IconButton(
-          icon: const Icon(Icons.settings, color: AppTheme.textOnPrimary),
-          onPressed: () {
-            // TODO: Navigate to settings
-          },
-          tooltip: 'الإعدادات',
-        ),
-      ],
+      // actions: [
+      //   IconButton(
+      //     icon: const Icon(Icons.refresh, color: AppTheme.textOnPrimary),
+      //     onPressed: _fetchDevices,
+      //     tooltip: 'تحديث',
+      //   ),
+      //   IconButton(
+      //     icon: const Icon(Icons.settings, color: AppTheme.textOnPrimary),
+      //     onPressed: () {
+      //       // TODO: Navigate to settings
+      //     },
+      //     tooltip: 'الإعدادات',
+      //   ),
+      // ],
     );
   }
 
@@ -483,6 +492,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (filteredDevices.isEmpty) {
       return SliverFillRemaining(
+         hasScrollBody: false,
         child: EmptyStateWidget(
           icon: searchQuery.isNotEmpty ? Icons.search_off : Icons.devices_other,
           title: searchQuery.isNotEmpty ? 'لا توجد نتائج' : 'لا توجد أجهزة',
@@ -540,6 +550,293 @@ class _HomeScreenState extends State<HomeScreen>
       label: const Text('تحديث'),
       backgroundColor: AppTheme.primaryColor,
       foregroundColor: AppTheme.textOnPrimary,
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      backgroundColor: AppTheme.surfaceColor,
+      child: Column(
+        children: [
+          // رأس الـ drawer
+          Container(
+            height: 200,
+            decoration: const BoxDecoration(
+              gradient: AppTheme.primaryGradient,
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.admin_panel_settings,
+                        color: AppTheme.textOnPrimary,
+                        size: 40,
+                      ),
+                    ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+                    Text(
+                      'إدارة الأجهزة',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: AppTheme.textOnPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'لوحة التحكم الرئيسية',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.textOnPrimary.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // قائمة العناصر
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.home,
+                  title: 'الصفحة الرئيسية',
+                  isSelected: true,
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildDrawerItem(
+                  icon: Icons.devices,
+                  title: 'إدارة الأجهزة',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _navigateToScreen(const DevicesManagementScreen());
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.apps,
+                  title: 'إدارة التطبيقات',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _navigateToScreen(const AppsManagementScreen());
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.location_on,
+                  title: 'تتبع المواقع',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _navigateToScreen(const LocationTrackingScreen());
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.terminal,
+                  title: 'أوامر التحكم',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _navigateToScreen(const CommandsScreen());
+                  },
+                ),
+                const Divider(
+                  color: AppTheme.dividerColor,
+                  thickness: 1,
+                  indent: 16,
+                  endIndent: 16,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.settings,
+                  title: 'الإعدادات',
+                  onTap: () {
+                    Navigator.pop(context);
+                    TransitionHelpers.navigateWithTransition(
+                      context,
+                      const SettingsScreen(),
+                      type: TransitionType.slideFromRight,
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.info,
+                  title: 'حول التطبيق',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showAboutDialog();
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // تذييل الـ drawer
+          Container(
+            padding: const EdgeInsets.all(AppConstants.paddingLarge),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.1),
+              border: Border(
+                top: BorderSide(
+                  color: AppTheme.dividerColor,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.accentGradient,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    color: AppTheme.textOnPrimary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: AppConstants.paddingMedium),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'DeepSafer',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'مطور التطبيق',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isSelected = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppConstants.paddingSmall,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: isSelected ? AppTheme.primaryColor.withOpacity(0.1) : null,
+        borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? AppTheme.primaryColor : AppTheme.textPrimary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+        onTap: onTap,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+        ),
+      ),
+    );
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+        ),
+        title: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+              ),
+              child: const Icon(
+                Icons.info,
+                color: AppTheme.textOnPrimary,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: AppConstants.paddingMedium),
+            const Text('حول التطبيق'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'تطبيق إدارة الأجهزة',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppConstants.paddingSmall),
+            const Text(
+              'تطبيق متطور لإدارة الأجهزة المحمولة عن بُعد.',
+            ),
+            const SizedBox(height: AppConstants.paddingMedium),
+            const Text(
+              'DeepSafer : تم التطوير بواسط',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppTheme.primaryColor,
+              ),
+            ),
+            const SizedBox(height: AppConstants.paddingSmall),
+            const Text(
+              'الإصدار: 2.0.0',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: AppConstants.paddingMedium),
+            const Text(
+              '© 2025 جميع الحقوق محفوظة',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('حسناً'),
+          ),
+        ],
+      ),
     );
   }
 

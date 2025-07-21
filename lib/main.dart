@@ -1,8 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:mdm/MDM-Admin/enhanced_send_command_screen.dart';
-import 'package:mdm/MDM-Admin/refactored_send_command_screen.dart';
-import 'package:mdm/home.dart';
 import 'package:mdm/screens/home_screen.dart';
 
 void main() async {
@@ -24,9 +21,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Cairo',
       ),
       title: 'MDM Admin',
-     // home: HomeScreen(),
-     // home:RefactoredSendCommandScreen()
-     home: EnhancedDeviceManagementScreen()
+      home: HomeScreen(),
     );
   }
 }
